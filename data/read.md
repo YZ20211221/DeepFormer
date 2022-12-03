@@ -1,0 +1,3 @@
+1 Data You need to first download the training, validation, and testing sets from DeepSEA.You can download the datasets from http://deepsea.princeton.edu/media/code/deepsea_train_bundle.v0.9.tar.gz 
+2 After you have extracted the contents of the tar.gz file, move the 3 .mat files into the data/ folder. 
+3 We also transform the .mat files to .fasta files, you can get them from there https://pan.baidu.com/s/1AaMBCgTzysljGg_JhyUKfA, 
