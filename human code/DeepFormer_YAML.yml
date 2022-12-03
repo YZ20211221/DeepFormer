@@ -1,0 +1,45 @@
+---
+ops: [train, evaluate]
+model: {
+    path: DeepFormer_model.py,
+    class: DeepFormer,
+    class_args: {
+        sequence_length: 1000,
+        n_targets: 919,
+    },
+    non_strand_specific: mean
+}
+sampler: !obj:selene_sdk.samplers.IntervalsSampler {
+    reference_sequence: !obj:selene_sdk.sequences.Genome {
+        input_path: data/male.hg19.fasta,
+        blacklist_regions: hg19
+    },
+    features: !obj:selene_sdk.utils.load_features_list {
+        input_path: data/distinct_features.txt
+    },
+    target_path: data/sorted_deepsea_data.bed.gz, 
+    intervals_path: data/TF_intervals.txt,
+    test_holdout: [chr8, chr9],
+    validation_holdout: [chr6, chr7],
+    seed: 127,
+    sequence_length: 1000,
+    center_bin_to_predict: 200,
+    feature_thresholds: 0.5,
+    mode: train,
+    save_datasets: [train, test, validate]
+}
+
+train_model: !obj:selene_sdk.TrainModel {
+    
+    max_steps: 200000,
+    report_stats_every_n_steps: 4000,
+    n_validation_samples: 8000,
+    n_test_samples: 455024,
+    use_cuda: True,
+    data_parallel: False,
+    logging_verbosity: 2
+}
+output_dir: DeepFormer
+random_seed: 1447
+create_subdirectory: False
+...

@@ -1,0 +1,45 @@
+---
+ops: [evaluate]
+model: {
+    path: DeepFormer_model.py,
+    class:DeepFormer,
+    class_args: {
+        sequence_length: 1000,
+        n_targets: 919,
+    },
+    non_strand_specific: mean
+}
+
+
+
+sampler: !obj:selene_sdk.samplers.IntervalsSampler {
+    reference_sequence: !obj:selene_sdk.sequences.Genome {
+        input_path: data/male.hg19.fasta,
+        blacklist_regions: hg19
+    },
+    features: !obj:selene_sdk.utils.load_features_list {
+        input_path: data/distinct_features.txt
+    },
+    target_path: data/sorted_deepsea_data.bed.gz, 
+    intervals_path: data/TF_intervals.txt,
+    test_holdout: [chr8, chr9],
+    seed: 127,
+    sequence_length: 1000,
+    center_bin_to_predict: 200,
+    feature_thresholds: 0.5
+    
+}
+
+evaluate_model: !obj:selene_sdk.EvaluateModel {
+    batch_size: 64,
+    n_test_samples: 455024,
+    features:  !obj:selene_sdk.utils.load_features_list {
+        input_path: data/distinct_features.txt
+    },
+    use_cuda: True, 
+    report_gt_feature_n_positives: 50,
+    trained_model_path: best_model/best_model.pth.tar,
+    output_dir: best_model/evaluation_outputs
+}
+random_seed: 123
+...
