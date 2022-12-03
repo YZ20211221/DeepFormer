@@ -1,0 +1,51 @@
+import math
+
+import numpy as np
+import torch
+import torch.nn as nn
+from torch import functional as F
+
+
+class DanQ_JASPAR(nn.Module):
+    def __init__(self, sequence_length, n_targets):
+        super(DanQ_JASPAR, self).__init__()
+        self.conv_pool_drop_1 = nn.Sequential(
+            nn.Conv1d(in_channels=4, out_channels=1024, kernel_size=30, stride=1),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=15, stride=15),
+            nn.Dropout(0.2))
+
+        self.bdlstm = nn.LSTM(input_size=1024, hidden_size=512, num_layers=1, batch_first=True, bidirectional=True)
+
+        self.dropout_2 = nn.Dropout(0.5)
+
+        self.dense_1 = nn.Sequential(
+            nn.Linear(65536, 925),
+            nn.ReLU())
+
+        self.dense_2 = nn.Sequential(
+            nn.Linear(925, n_targets),
+            nn.Sigmoid())
+
+    def forward(self, inputs, training=None, mask=None, **kwargs):
+        temp = self.conv_pool_drop_1(inputs)
+        temp = temp.transpose(1, 2)
+
+        temp, _ = self.bdlstm(temp)
+
+        temp = self.dropout_2(temp)
+
+        temp = temp.reshape(temp.shape[0], -1)
+
+        temp = self.dense_1(temp)
+
+        output = self.dense_2(temp)
+        return output
+
+
+def criterion():
+    return nn.BCELoss()
+
+def get_optimizer(lr):
+    return (torch.optim.Adam,{"lr": lr, "weight_decay": 1e-6})
+
